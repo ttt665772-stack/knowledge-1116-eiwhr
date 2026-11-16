@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家庭网络卡顿的排查顺序</title>
+<meta name="description" content="网络排查 的实用经验：包含具体步骤、数字参考与常见错误，约 2000 字。">
+<meta name="keywords" content="网络排查,步骤,实用经验,步骤">
+<link rel="canonical" href="">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "家庭网络卡顿的排查顺序", "description": "网络排查 的实用经验整理，包含具体做法与常见错误。", "author": {"@type": "Person", "name": "编辑部"}, "datePublished": "2026-11-16", "inLanguage": "zh-CN"}, {"@type": "WebPage", "name": "家庭网络卡顿的排查顺序"}]}</script>
+<style>
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.9;color:#1f2328}
+h1{font-size:28px;line-height:1.4}h2{font-size:21px;margin-top:34px;border-left:4px solid #0b62d6;padding-left:10px}
+h3{font-size:17px;margin-top:22px}ul,ol{padding-left:24px}a{color:#0b62d6;text-decoration:none}a:hover{text-decoration:underline}
+.toc{background:#f6f8fa;border:1px solid #e5e7eb;padding:12px 18px;border-radius:8px;font-size:14px}
+footer{margin-top:44px;border-top:1px solid #eee;padding-top:16px;font-size:14px;color:#57606a}
+</style>
+</head>
+<body>
+<h1>家庭网络卡顿的排查顺序</h1>
+<div class="toc"><strong>目录</strong><br>一、问题与目标　二、具体做法　三、常见错误　四、效果判断　五、常见问题</div>
+<h2>网络故障排查：从“断网了”到定位根因的实操路径</h2>
+<p>用户报“上不了网”，实际可能是 DNS、路由、运营商线路、终端配置或应用层问题。按步骤排查能把平均恢复时间从 45 分钟压到 10 分钟以内，并减少 30% 以上的无效上门。下面按“先确认范围、再分层验证、最后固化记录”的顺序展开，每一步都给出可执行的编号动作与常见错误。</p>
+
+<h2>一、先花 3 分钟确认故障范围与影响面</h2>
+<p><strong>步骤 1：确认是单机还是多机。</strong>让报障人用手机热点或另一台设备访问同一服务，若另一台正常，问题大概率在单机（网卡、IP、代理、 hosts）；若两台都不行，进入步骤 2。常见错误：只问“能不能上网”而不问“哪些应用不能”，导致把应用故障当网络故障处理。</p>
+<p><strong>步骤 2：确认故障边界。</strong>记录 3 个信息：受影响设备数量、是否同一交换机/AP、是否同一时间段（如 09:00—09:15 集中报障）。同一 AP 下 5 台以上同时断，优先查 AP 上联口或 PoE 供电；跨楼层同时断，优先查汇聚交换机或出口线路。</p>
+<p><strong>步骤 3：确认最近变更。</strong>问清 24 小时内是否改过 IP、换过路由器、装过安全软件、改过 DNS。实际案例中约 40% 的“突然断网”由终端侧变更引起，单次误判可浪费 20—40 分钟。</p>
+<ul>
+<li>常见错误：跳过范围确认直接重启光猫，导致 5—10 分钟的断网窗口被浪费，且丢失现场证据。</li>
+<li>常见错误：把“能 ping 通但打不开网页”直接判为运营商故障，忽略 DNS 与代理配置。</li>
+</ul>
+
+<h2>二、按物理层到应用层逐层验证（每层 1—2 分钟）</h2>
+<p><strong>步骤 4：物理与链路检查。</strong>看网口指示灯、Wi-Fi 信号强度（低于 -75 dBm 视为弱信号）、光猫 LOS 灯是否红灯。有线直连光猫 LAN 口测试，若直连正常而经过路由器异常，问题锁定在路由器或内网链路。常见错误：只看“已连接”图标，不看协商速率（10 Mbps 半双工往往意味着网线或水晶头老化）。</p>
+<p><strong>步骤 5：IP 与网关验证。</strong>执行 <strong>ipconfig /all</strong>（Windows）或 <strong>ip addr</strong>（Linux），确认是否拿到 169.254.x.x 地址——出现该地址说明 DHCP 失败，检查 DHCP 地址池是否耗尽（常见于 254 个地址被占满）或 VLAN 配置错误。再 ping 网关，连续 10 个包丢包率超过 20% 视为链路质量异常。</p>
+<p><strong>步骤 6：DNS 与出口验证。</strong>用 <strong>nslookup</strong> 分别向本地 DNS 和公共 DNS 查询同一域名，若本地超时而公共正常，改 DNS 为 223.5.5.5 或 119.29.29.29 复测。再 ping 公网地址（如 223.5.5.5），通但域名不通即 DNS 问题；两者都不通，查出口路由与运营商线路。</p>
+<p><strong>步骤 7：应用层验证。</strong>浏览器无痕模式访问，排除插件与缓存；关闭代理（系统代理、VPN、安全软件流量拦截）后复测。企业环境中约 25% 的“网络故障”实为代理规则或证书拦截导致。</p>
+<ul>
+<li>常见错误：不记录每一步的测试结果，导致重复测试，单次排查多花 15 分钟以上。</li>
+<li>常见错误：在未确认网关可达前就更换 DNS，方向错误。</li>
+</ul>
+
+<h2>三、定位到具体设备后做替换与抓包</h2>
+<p><strong>步骤 8：替换法缩小范围。</strong>用已知正常的网线、AP、交换机端口逐一替换，每次只换一个变量。企业内网单台交换机端口故障的更换成本约 0—200 元，而整机更换通常 800—3000 元，先换线换口可省下 70% 以上的备件支出。</p>
+<p><strong>步骤 9：抓包确认。</strong>在故障终端与网关同时抓包 60 秒，观察是否有 ARP 请求无响应、TCP 三次握手无 SYN-ACK、大量重传（重传率超过 5% 需关注）。若只有单方向包，多为路由或防火墙策略丢弃。</p>
+<p><strong>步骤 10：查设备日志。</strong>登录交换机/路由器查看 30 分钟内日志，关注端口 up/down、PoE 过载、DHCP 租约冲突、CPU 利用率超过 80% 的告警。常见错误：只看终端日志不看网络设备日志，漏掉端口闪断这一高频原因。</p>
+<ul>
+<li>常见错误：抓包时间过短（少于 30 秒），错过间歇性故障窗口。</li>
+<li>常见错误：在故障未复现时强行更换核心设备，增加 1—2 小时业务中断风险。</li>
+</ul>
+
+<h2>四、恢复后固化记录与复盘</h2>
+<p><strong>步骤 11：记录五要素。</strong>故障时间、影响范围、根因、处理动作、恢复时间。建议每次排查填写一张记录卡，累计 20 条后可归纳出本单位前 3 类高频故障，通常能覆盖 60% 以上的报障量。</p>
+<p><strong>步骤 12：设置观察期。</strong>恢复后观察 30 分钟，确认无二次断连再关闭工单。对间歇性故障，建议连续监测 24 小时，丢包率阈值设为 1%。</p>
+<p><strong>步骤 13：复盘改进。</strong>若根因为 DHCP 池耗尽，把租约从 8 天缩短到 2 天或扩容地址池；若为弱信号，增加 AP 或调整信道。单次复盘投入约 30 分钟，可减少同类故障 50% 的重复发生。</p>
+<ul>
+<li>常见错误：恢复即结单，不做记录，导致同类问题下次仍从零排查。</li>
+<li>常见错误：复盘只写“已恢复”，不写根因与验证数据。</li>
+</ul>
+
+<h2>常见问题</h2>
+<p><strong>问：能 ping 通网关但打不开网页，先查什么？</strong>先查 DNS 与代理：用 nslookup 对比本地与公共 DNS，再关闭系统代理和 VPN 复测。两步通常 3 分钟内可定位，约 60% 的此类问题出在 DNS 或代理配置。</p>
+<p><strong>问：只有一台设备断网，需要查运营商吗？</strong>不需要。单机故障优先查本机 IP（是否 169.254 开头）、网线/ Wi-Fi 信号、安全软件与 hosts。运营商线路故障通常影响同一出口下多台设备。</p>
+<p><strong>问：间歇性断网抓不到包怎么办？</strong>把抓包时长延长到 10—30 分钟并同时抓终端与网关两侧，配合设备日志看端口 up/down 与 PoE 告警；仍无法复现时，用持续 ping 监测 24 小时，记录丢包时间点再对照日志。</p>
+<h2>参考资料</h2>
+<ul>
+<li><a href="https://bisaihu.com.cn/">bisaihu.com.cn</a></li>
+</ul>
+<footer>本文为经验整理，数据与方法随实践持续更新。</footer>
+</body>
+</html>
